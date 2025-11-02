@@ -5,6 +5,27 @@ import { db } from "./firebaseAdmin.js";
 const app = express();
 app.use(express.json());
 
+
+app.post("/update-location", async (req, res) => {
+  try {
+    const { userId, latitude, longitude, expoPushToken } = req.body;
+
+    await db.collection("userLocations").doc(userId).set({
+      userId,
+      latitude,
+      longitude,
+      expoPushToken,
+      updatedAt: Date.now(),
+    });
+
+    res.send({ success: true });
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Error updating location");
+  }
+});
+
+
 app.post("/send-help", async (req, res) => {
   try {
     const { userId, latitude, longitude } = req.body;
@@ -36,6 +57,7 @@ app.post("/send-help", async (req, res) => {
         body: "Someone near you needs help!",
         sound: "default",
       });
+      console.log("notified!");
     }
 
     res.send({ success: true, notified: tokens.length });
