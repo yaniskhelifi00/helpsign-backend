@@ -1,18 +1,1 @@
-{ 
-  "type": "module",
-  "name": "help-backend",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "dependencies": {
-    "axios": "^1.13.1",
-    "express": "^5.1.0",
-    "firebase-admin": "^13.5.0"
-  }
-}
+{"type":"module","name":"help-backend","version":"1.0.0","description":"","main":"index.js","scripts":{"test":"echo \"Error: no test specified\" && exit 1"},"keywords":[],"author":"","license":"ISC","dependencies":{"@prisma/client":"^6.18.0","axios":"^1.13.1","bcryptjs":"^3.0.3","cors":"^2.8.5","dotenv":"^17.2.3","express":"^5.1.0","express-validator":"^7.3.0","firebase-admin":"^13.5.0","jsonwebtoken":"^9.0.2","prisma":"^6.18.0"}}
