@@ -20,7 +20,7 @@ export const registerUser = async (req, res) => {
     res.json({ message: "User registered", user: { id: user.id, email: user.email } });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: "Registration failed" });
+    res.status(500).json({ error: "Registration failed" ,message:"Usert already exists"});
   }
 };
 
