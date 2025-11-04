@@ -30,9 +30,12 @@ export const sendHelp = async (req, res) => {
   try {
     const { userId, latitude, longitude } = req.body;
 
-    if (!userId || !latitude || !longitude)
-      return res.status(400).send("Missing required fields");
+    // Validation
+    if (!userId || !latitude || !longitude) {
+      return res.status(400).json({ error: "Missing required fields" });
+    }
 
+    // Save help request
     await db.collection("helpRequests").add({
       userId,
       latitude,
@@ -40,34 +43,43 @@ export const sendHelp = async (req, res) => {
       timestamp: Date.now(),
     });
 
-    // Get all user locations
+    // Fetch all user locations
     const usersSnap = await db.collection("userLocations").get();
     const tokens = [];
 
     usersSnap.forEach((doc) => {
       const u = doc.data();
-      if (u.userId !== userId) {
-        const distance = getDistance(latitude, longitude, u.latitude, u.longitude);
-        if (distance < 1 && u.expoPushToken) {
-          tokens.push(u.expoPushToken);
-        }
+
+      // Skip sender
+      if (u.userId === userId) return;
+
+      // Check distance (within 1 km)
+      const distance = getDistance(latitude, longitude, u.latitude, u.longitude);
+      if (distance < 1 && u.expoPushToken) {
+        tokens.push(u.expoPushToken);
       }
     });
 
-    // Notify users
+    // Send push notifications to nearby users
     if (tokens.length > 0) {
-      await axios.post("https://exp.host/--/api/v2/push/send", {
-        to: tokens,
+      const messages = tokens.map((token) => ({
+        to: token,
         title: "🚨 Silent Help Alert",
-        body: "Someone near you needs help!",
+        body: "Someone near you needs help! Tap to open the app.",
         sound: "default",
-      });
-      console.log(`Notified ${tokens.length} users`);
+        data: { screen: "HelpRequest" },
+      }));
+
+      await axios.post("https://exp.host/--/api/v2/push/send", messages);
+      console.log(`✅ Notified ${tokens.length} nearby users`);
     }
 
-    res.send({ success: true, notified: tokens.length });
+    return res.status(200).json({
+      success: true,
+      notified: tokens.length,
+    });
   } catch (err) {
-    console.error("Error sending help:", err);
-    res.status(500).send("Error sending help");
+    console.error("❌ Error sending help:", err);
+    return res.status(500).json({ error: "Internal server error" });
   }
 };
