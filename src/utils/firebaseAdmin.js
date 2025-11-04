@@ -1,5 +1,5 @@
 // src/utils/firebaseAdmin.js
-import admin from "firebase-admin";
+import admin from "firebase-admin"; 
 
 // Initialize Firebase Admin only once
 if (!admin.apps.length) {
