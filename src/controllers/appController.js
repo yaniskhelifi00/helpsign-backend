@@ -2,8 +2,6 @@ import axios from "axios";
 import { db } from "../utils/firebaseAdmin.js";
 import { getDistance } from "../utils/distance.js";
 
-
-// Send help alert
 export const sendHelp = async (req, res) => {
   try {
     const { userId, latitude, longitude, description } = req.body;
@@ -12,7 +10,7 @@ export const sendHelp = async (req, res) => {
       return res.status(400).json({ error: "Missing required fields" });
     }
 
-    // Save help request with description
+    // Save help request
     await db.collection("helpRequests").add({
       userId,
       latitude,
@@ -20,9 +18,9 @@ export const sendHelp = async (req, res) => {
       description: description || "",
       timestamp: Date.now(),
     });
-    console.log(`user requested help at (${latitude}, ${longitude}) registered.`);
+    console.log(`📍 Help requested by ${userId} at (${latitude}, ${longitude})`);
 
-    // Fetch all user locations
+    // Fetch all users
     const usersSnap = await db.collection("userLocations").get();
     const tokens = [];
 
@@ -36,22 +34,36 @@ export const sendHelp = async (req, res) => {
       }
     });
 
-    // Send push notifications
-    if (tokens.length > 0) {
-      const messages = tokens.map((token) => ({
-        to: token,
-        title: "🚨 Tyst hjälpsignal",
-        body: description
-          ? `${description} behöver hjälp i närheten!`
-          : "Någon i närheten behöver hjälp!",
-        sound: "default",
-        data: { screen: "HelpRequest" },
-      }));
-
-      await axios.post("https://exp.host/--/api/v2/push/send", messages);
-      console.log(`✅ Notified ${tokens.length} nearby users`);
+    if (tokens.length === 0) {
+      console.log("ℹ️ No nearby users found.");
+      return res.status(200).json({ success: true, notified: 0 });
     }
 
+    // Prepare messages
+    const messages = tokens.map((token) => ({
+      to: token,
+      title: "🚨 Tyst hjälpsignal",
+      body: description
+        ? `${description} behöver hjälp i närheten!`
+        : "Någon i närheten behöver hjälp!",
+      sound: "default",
+      data: { screen: "HelpRequest" },
+    }));
+
+    // ✅ Correct Expo push format
+    const response = await axios.post(
+      "https://exp.host/--/api/v2/push/send",
+      messages,
+      {
+        headers: {
+          "Accept": "application/json",
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    console.log("📬 Push response:", response.data);
+    console.log(`✅ Notified ${tokens.length} nearby users`);
     return res.status(200).json({ success: true, notified: tokens.length });
   } catch (err) {
     console.error("❌ Error sending help:", err);
