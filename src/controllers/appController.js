@@ -20,6 +20,7 @@ export const sendHelp = async (req, res) => {
       description: description || "",
       timestamp: Date.now(),
     });
+    console.log(`user requested help at (${latitude}, ${longitude}) registered.`);
 
     // Fetch all user locations
     const usersSnap = await db.collection("userLocations").get();
