@@ -47,8 +47,11 @@ export const sendHelp = async (req, res) => {
         ? `${description} behöver hjälp i närheten!`
         : "Någon i närheten behöver hjälp!",
       sound: "default",
+      priority: "high", // Ensures delivery + vibration on Android
+      channelId: "help-alerts", // Custom channel (defined below)
       data: { screen: "HelpRequest" },
     }));
+
 
     // ✅ Correct Expo push format
     const response = await axios.post(
