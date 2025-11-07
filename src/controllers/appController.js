@@ -49,7 +49,12 @@ export const sendHelp = async (req, res) => {
       sound: "default",
       priority: "high", // Ensures delivery + vibration on Android
       channelId: "help-alerts", // Custom channel (defined below)
-      data: { screen: "HelpRequest" },
+      data: {
+      screen: "HelpRequest",
+      latitude,
+      longitude,
+      userId,
+    },
     }));
 
 
